@@ -212,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private void play() {
-        if (mState == PlayState.INITIALIZED || mState ==PlayState.STOPPED) {
+        if (mState == PlayState.INITIALIZED || mState == PlayState.STOPPED) {
             try {
                 mPlayer.prepare();
                 mState = PlayState.PREPARED;
@@ -238,8 +238,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void stop() {
         if (mState == PlayState.STARTED || mState == PlayState.PREPARED || mState == PlayState.PAUSED) {
-            mPlayer.stop();;
-            mState = PlayState.PAUSED.STOPPED;
+            mPlayer.stop();
+            mState = PlayState.STOPPED;
             progressView.setProgress(0);
         }
     }
