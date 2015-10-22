@@ -1,5 +1,7 @@
 package com.example.dongja94.samplemediaplay;
 
+import android.content.Context;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,6 +14,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.SeekBar;
 
 import java.io.IOException;
@@ -32,8 +36,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     PlayState mState = PlayState.IDLE;
-    SeekBar progressView;
+    SeekBar progressView, volumeView;
+    AudioManager mAM;
+    CheckBox muteView;
 
+    float volume = 1.0f;
+
+    Runnable volumeUp = new Runnable() {
+        @Override
+        public void run() {
+            if (volume < 1.0f) {
+                mPlayer.setVolume(volume, volume);
+                volume+=0.1f;
+                mHandler.postDelayed(this, CHECK_INTERVAL);
+            } else {
+                volume = 1.0f;
+                mPlayer.setVolume(volume,volume);
+            }
+        }
+    };
+
+    Runnable volumeDown = new Runnable() {
+        @Override
+        public void run() {
+            if (volume > 0) {
+                mPlayer.setVolume(volume, volume);
+                volume -= 0.1f;
+                mHandler.postDelayed(this, CHECK_INTERVAL);
+            } else {
+                volume = 0;
+                mPlayer.setVolume(volume,volume);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +83,46 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+            }
+        });
+
+        muteView = (CheckBox)findViewById(R.id.check_mute);
+
+        muteView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    mHandler.removeCallbacks(volumeUp);
+                    mHandler.post(volumeDown);
+                } else {
+                    mHandler.removeCallbacks(volumeDown);
+                    mHandler.post(volumeUp);
+                }
+            }
+        });
+        mAM = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        volumeView = (SeekBar)findViewById(R.id.seek_volume);
+        int max = mAM.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        volumeView.setMax(max);
+        int current = mAM.getStreamVolume(AudioManager.STREAM_MUSIC);
+        volumeView.setProgress(current);
+
+        volumeView.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    mAM.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
             }
         });
 
